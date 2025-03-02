@@ -1,0 +1,10 @@
+import "@testing-library/jest-dom";
+
+const ResizeObserverMock = jest.fn(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Stub the global ResizeObserver
+global.ResizeObserver = ResizeObserverMock;
