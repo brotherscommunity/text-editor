@@ -105,7 +105,47 @@ const WysiwygEditor = forwardRef(
     useImperativeHandle(ref, () => ({
       clearContent: () => editor?.commands.clearContent(true),
     }));
+    useEffect(() => {
+      const handlePaste = (event) => {
+        // event.preventDefault();
+        const clipboardData = event.clipboardData || event.originalEvent.clipboardData;
+        const items = clipboardData.items;
+  
+        
+        // Check for text/html type
+        for (const item of items) {
+          console.log('image Items:', item.type);
+          if (item.type === 'text/html') {
+            item.getAsString((html) => {
+              // console.log('image HTML:', html); 
+  
+              // Parse the HTML to extract the image src
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const img = doc.querySelector('img');
+              
+              if (img && img.src) {
+                const src = img.src;
+                if (editor) {
+                  editor.chain().focus().setImage({ src }).run();
+                }
+              }
+            });
+          }
+        }
+      };
 
+      const editorElement = editor?.options.element;
+      if (editorElement) {
+        editorElement.addEventListener("paste", handlePaste);
+      }
+
+      return () => {
+        if (editorElement) {
+          editorElement.removeEventListener("paste", handlePaste);
+        }
+      };
+    }, [editor]);
     return (
       <div
         onClick={() => {
